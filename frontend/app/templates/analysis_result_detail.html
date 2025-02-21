@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+
+{% block title %}Analysis Result - {{ result.name }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Task Result</h2>
+
+    <!-- Information Card -->
+    <div class="col-md-12">
+        <div class="card mt-3 d-flex flex-column h-100">
+            <div class="card-header">
+                <h5 class="mb-0">Information</h5>
+            </div>
+            <div class="card-body p-0">
+                <ul class="list-group">
+                    <table class="table truncate-table table-striped mb-0">
+                        <tbody>
+                            <tr>
+                                <td style="width: 130px"><b>Name:</b></td>
+                                <td>{{ result.name }}</td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td style="width: 20%"><b>Task:</b></td>
+                                <td style="width: 80%"><a href="/task/{{ task.uuid }}">{{ task.name }}</a></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td><b>Importance:</b></td>
+                                <td>{{ result.importance }}</td>
+                                <td><b>Created on:</b></td>
+                                <td>{{ result.timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
+                            </tr>
+                            <tr>
+                                <td class="percent-25"><b>Analyser:</b></td>
+                                <td class="percent-25"><a href="/analyser/{{ result.analyser.uuid }}">{{ result.analyser.name }}</a></td>
+                                <td><b>Hidden</b></td>
+                                <td>{{ result.hidden }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Display Result Payload -->
+    {% for attr, display_type in result.display.items() %}
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5 class="m-0">{{ attr | replace("_", " ") | title }}</h5>
+            </div>
+            <div class="card-body {% if display_type == 'markdown' %}markdown-content{% endif %}">
+                {% if display_type == 'plaintext' %}
+                    <p>{{ result.payload[attr] }}</p>
+                {% elif display_type == 'markdown' %}
+                    {{ result.payload[attr] }}
+                {% elif display_type == 'json' %}
+                    <pre>{{ result.payload[attr] | tojson(indent=2) }}</pre>
+                {% endif %}
+            </div>
+        </div>
+    {% endfor %}
+
+    <!-- Raw Analysis Output (with line wrapping) -->
+    <div class="card mt-3">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="m-0">Raw Analysis Output</h5>
+            <button class="btn btn-sm btn-outline-secondary toggle-button" data-bs-toggle="collapse" data-bs-target="#analysisOutput">
+                <i class="fas fa-chevron-down"></i>
+            </button>
+        </div>
+        <div id="analysisOutput" class="collapse card-body">
+            <pre class="p-3" style="white-space: pre-wrap; word-wrap: break-word;">{{ result.payload | tojson(indent=2) }}</pre>
+        </div>
+    </div>
+
+    <!-- Original Collection Data (Formatted) -->
+    <div class="card mt-3">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="m-0">Original Collection Data</h5>
+            <button class="btn btn-sm btn-outline-secondary toggle-button" data-bs-toggle="collapse" data-bs-target="#originalData">
+                <i class="fas fa-chevron-down"></i>
+            </button>
+        </div>
+        <div id="originalData" class="collapse card-body p-0">
+            <table class="table table-striped mb-0">
+                <tbody>
+                    {% if result.origin_data %}
+                    <tr>
+                        <td class="percent-25"><b>Source:</b></td>
+                        <td class="percent-75"><a href="/channel/ {{ result.origin_data.channel.uuid }}">{{ result.origin_data.channel.name }}</a></td>
+                    </tr>
+                    <tr>
+                        <td><b>Collected on:</b></td>
+                        <td>{{ result.origin_data.timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">
+                            <pre class="p-3" style="white-space: pre-wrap; word-wrap: break-word;">{{ result.origin_data.payload | tojson(indent=2) }}</pre>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="2" class="text-muted text-center">No associated collection data.</td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Parent Analysis Result (Formatted) -->
+    {% if result.origin_analysis_result %}
+    <div class="card mt-3">
+        <div class="card-header">
+            <h5 class="m-0">Parent Analysis Result</h5>
+        </div>
+        <div class="card-body p-0">
+            <table class="table table-striped mb-0">
+                <tbody>
+                    <tr>
+                        <td class="percent-25"><b>Derived from:</b></td>
+                        <td class="percent-75">
+                            <a href="{{ url_for('main.analysis_result_detail', result_uuid=result.origin_analysis_result.uuid) }}">
+                                {{ result.origin_analysis_result.name }}
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}
+

@@ -1,0 +1,5 @@
+mongoengine
+telethon
+redis
+jinja2
+openai

@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}Collectors{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Collectors</h2>
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Data</th>
+                <th>Last Entry</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if collectors %}
+                {% for collector in collectors %}
+                <tr>
+                    <td><a href="/collector/{{ collector.uuid }}">{{ collector.name }}</a></td>
+                    <td>{{ collector.description or 'No description available.' }}</td>
+                    <td>{{ collector.entry_count }}</td>
+                    <td class="text-muted">
+                        {{ collector.last_data.strftime('%Y-%m-%d %H:%M') if collector.last_data else 'N/A' }}
+                    </td>
+                </tr>
+                {% endfor %}
+            {% else %}
+                <td colspan="3" class="text-muted text-center">There are currently no collectors.</td>
+            {% endif %}
+        </tbody>
+    </table>
+
+    {% include "components/pagination_controls.html" %}
+   
+</div>
+{% endblock %}

@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}Analysis Results{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Analysis Results</h2>
+
+    <table class="table truncate-table table-striped">
+        <thead>
+            <tr>
+                <th style="width: 120px">Date</th>
+                <th style="width: 29px"></th>
+                <th class="flex-column">Name</th>
+                <th style="width: 140px">Task</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if results %}
+                {% for result in results %}
+                <tr>
+                    <td class="text-muted align-middle" style="font-size: 9pt">{{ result.timestamp.strftime('%Y-%m-%d %H:%M') if result.timestamp else 'N/A' }}</td>
+                    <td class="text-muted">
+                        <i class="fas fa-circle {% if result.importance == 'high' %}text-danger{% else %}text-secondary{% endif %}" 
+                           style="font-size: 8px; vertical-align: middle; margin-right: 5px;"></i>
+                    </td>
+                    <td><a href="/result/{{ result.uuid }}">{{ result.name }}</a></td>
+                    <td style="font-size: 9pt"><a href="/task/{{ result.task.uuid }}">{{ result.task.name }}</a></td>
+                </tr>
+                {% endfor %}
+            {% else %}
+                <td colspan="4" class="text-muted text-center">There are currently no analysis results.</td>
+            {% endif %}
+        </tbody>
+    </table>
+
+    {% include "components/pagination_controls.html" %}
+
+</div>
+{% endblock %}
+

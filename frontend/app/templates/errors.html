@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}Worker Errors{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Worker Errors</h2>
+
+    <table class="table truncate-table table-striped">
+        <thead>
+            <tr>
+                <th style="width: 25px"></th>
+                <th style="width: 140px">Date/Time</th>
+                <th style="width: 130px">Worker</th>
+                <th style="width: 180px">Error Type</th>
+                <th class="flex-column">Summary</th>
+                <th style="width: 75px">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if errors %}
+                {% for error in errors %}
+                <tr>
+                    <td class="text-center">
+                        {% if not error.read %}
+                            <i class="fas fa-circle text-primary" style="font-size: 8px; vertical-align: middle"></i>
+                        {% endif %}
+                    </td>
+                    <td class="text-muted" style="width: 170px">{{ error.timestamp.strftime('%Y-%m-%d %H:%M') if error.timestamp else 'N/A' }}</td>
+                    <td>{{ error.worker_name }}</td>
+                    <td>{{ error.error_type }}</td>
+                    <td>{{ error.error_summary }}</td>
+                    <td><a href="/error/{{ error.uuid }}"><i class="fas fa-magnifying-glass"></i></a></td>
+                </tr>
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td colspan="6" class="text-muted text-center">There are currently no errors reported (yay!).</td>
+                </tr>
+            {% endif %}
+        </tbody>
+    </table>
+
+    {% include "components/pagination_controls.html" %}
+    
+</div>
+
+{% endblock %}
+

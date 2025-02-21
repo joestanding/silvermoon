@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+
+{% block title %}Task Detail{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">
+        {% if mode == "view" %}
+            Analysis Task
+        {% elif mode == "new" %}
+            New Analysis Task
+        {% elif mode == "edit" %}
+            Edit Analysis Task
+        {% endif %}
+    </h2>
+
+    <input type="hidden" id="mode" value="{{ mode }}">
+
+    {% if mode == "new" %}
+    <form name="taskForm" id="taskForm" method="post" class="needs-validation" action="/tasks/new">
+    {% elif mode == "edit" %}
+    <form name="taskForm" id="taskForm" method="post" class="needs-validation" action="/task/{{ task.uuid }}/edit">
+    {% endif %}
+
+    {% if mode == "view" or mode == "edit" %}
+    <input type="hidden" id="existing-uuid" name="existing_uuid" value="{{ task.uuid }}" />
+    {% endif %}
+
+    <div class="row mb-3 g-3">
+         <div class="col-md-12">
+            <div class="card mt-3 d-flex flex-column h-100">
+                <div class="card-header">
+                    <h5 class="mb-0">Information</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group">
+                        <table class="table table-striped mb-0">
+                            <tbody>
+                                <tr>
+                                    <td class="align-middle"><b>Name</b></td>
+                                    <td>
+                                        {% if mode == "view" %}
+                                            {{ task.name }}
+                                        {% else %}
+                                            <input type="text" class="form-control form-control-sm" id="taskName" name="name" value="{{ task.name if task else '' }}" required>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="align-middle"><b>Description</b></td>
+                                    <td>
+                                        {% if mode == "view" %}
+                                            {{ task.description }}
+                                        {% else %}
+                                            <input type="text" class="form-control form-control-sm" id="taskDescription" name="description" value="{{ task.description if task else '' }}" required>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="align-middle"><b>Analyser</b></td>
+                                    <td>
+                                        {% if mode == "view" %}
+                                            {{ task.analyser.name }}
+                                        {% else %}
+                                        <div class="dropdown">
+                                            <select name="analyser" class="form-select form-control-sm" id="analyserSelect" required>
+                                                <option class="text-muted" selected disabled value="">Select an option</option>
+                                                {% for analyser in analysers %}
+                                                <option value="{{ analyser.uuid }}" {% if task and analyser.uuid == task.analyser.uuid %}selected{% endif %}>{{ analyser.name }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+
+                            </tbody>
+                        </table>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-md-12">
+            <div class="card mt-3 d-flex flex-column h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Triggers</h5>
+                    {% if mode == "edit" or mode == "new" %}
+                        <button type="button" id="addTriggerButton" class="btn btn-primary btn-sm" data-context="add-trigger" disabled>Add</button>
+                    {% endif %}
+                </div>
+                <div class="card-body">
+                    <table class="table truncate-table table-striped">
+                        <thead>
+                            <tr>
+                                <th style="width: 200px">Source Worker</th>
+                                <th style="width: 200px">Events</th>
+                                <th class="flex-column">Parameters</th>
+                                {% if mode == "edit" or mode == "new" %}
+                                <th style="width: 50px"></th>
+                                {% endif %}
+                            </tr>
+                        </thead>
+                        <tbody id="trigger-list">
+                            {% if mode == "view" %}
+                                {% for trigger in task.triggers %}
+                                <tr>
+                                    <td>{{ trigger.worker.name }}</td>
+                                    <td>{{ trigger.events }}</td>
+                                    <td class="text-muted">{{ trigger.parameters }}</td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="99" class="text-muted text-center">No triggers exist for this task.</td>
+                                </tr>
+                                {% endfor %}
+                            {% endif %}
+                        </tbody>
+                    </table>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="d-flex justify-content-center gap-2">
+                {% if mode == "edit" or mode == "new" %}
+                    <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#discard-changes-modal">Discard</button>
+                    <button type="submit" class="btn btn-success">Save</button>
+                {% else %}
+                    <a href="/task/{{ task.uuid }}/edit" class="btn btn-primary">Edit</a>
+                    <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#delete-modal" data-task-id="{{ task.uuid }}">Delete</button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    {% if mode == "new" or mode == "edit" %}
+    </form>
+    {% endif %}
+
+    {% include 'modals/task_delete.html' %}
+
+    {% include 'modals/task_abandon_changes.html' %}
+
+    {% include 'modals/task_new_trigger.html' %}
+
+</div>
+
+<script src="/static/js/task.js"></script>
+{% endblock %}

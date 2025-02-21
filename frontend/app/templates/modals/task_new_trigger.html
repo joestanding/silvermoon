@@ -1,0 +1,56 @@
+<div class="modal modal-lg fade" id="newTriggerModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="triggerModalTitle">Create New Trigger</h5>
+                <button type="button" id="closeTriggerModalX" class="btn-close"></button>
+            </div>
+            <div class="modal-body">
+
+                <input type="hidden" id="triggerModalMode" value="" />
+                <input type="hidden" id="triggerModalIndex" value="" />
+
+                <!-- Worker Selection -->
+                <div class="mb-3">
+                    <label for="newTriggerWorkerSelect" class="form-label"><b>Worker</b></label>
+                    <select name="triggerWorker" class="form-select" id="newTriggerWorkerSelect">
+                        <option selected disabled>Select an option</option>
+                        {% for worker in workers %}
+                        <option value="{{ worker.uuid }}">{{ worker.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Event Selection -->
+                <div class="mb-3">
+                    <label for="newTriggerEventSelect" class="form-label"><b>Event</b></label>
+                    <select name="triggerEvent" class="form-select" id="newTriggerEventSelect">
+                        <option value="NEW_DATA" selected>NEW_DATA</option>
+                        <option value="NEW_ANALYSIS_RESULT">NEW_ANALYSIS_RESULT</option>
+                    </select>
+                </div>
+
+                <!-- Parameters Table (Unchanged) -->
+                <div>
+                    <label class="form-label"><b>Parameters</b></label>
+                    <table class="table truncate-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 200px">Key</th>
+                                <th>Value</th>
+                            </tr>
+                        </thead>
+                        <tbody id="analyser-parameters">
+                        </tbody>
+                    </table>
+                </div>
+                
+            </div>
+
+            <div class="modal-footer">
+                <button id="saveTriggerButton" name="saveTriggerButton" type="button" class="btn btn-success">Add</button>
+            </div>
+        </div>
+    </div>
+</div>
+

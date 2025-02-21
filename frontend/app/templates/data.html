@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}Data Entries{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Data</h2>
+   
+    <table class="table truncate-table table-striped">
+        <thead>
+            <tr>
+                <th style="width: 140px">Date/Time</th>
+                <th class="flex-column">Title</th>
+                <th class="fixed-100">Collector</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if collection_data %}
+                {% for entry in collection_data %}
+                <tr>
+                    <td class="text-muted">{{ entry.timestamp.strftime('%Y-%m-%d %H:%M') if entry.timestamp else 'N/A' }}</td>
+                    
+                    <!-- Generate a clickable title if there's an analysis result -->
+                    <td>
+                        <a href="/data/{{ entry.uuid }}">
+                            {{ entry.friendly_text[:200] if entry.friendly_text else "No preview available" }}
+                        </a>
+                    </td>
+                    
+                    <!-- Display the collection source -->
+                    <td>
+                        <a href="/collector/{{ entry.channel.collector.uuid }}">{{ entry.channel.collector.name }}</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            {% else %}
+                <td colspan="3" class="text-muted text-center">There are currently no data entries.</td>
+            {% endif %}
+        </tbody>
+    </table> 
+
+    {% include "components/pagination_controls.html" %}
+        
+</div>
+{% endblock %}
+

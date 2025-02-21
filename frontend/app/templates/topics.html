@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}Topics{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Topics</h2>
+
+    <div class="row">
+        <div class="col-md-12">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Description</th>
+                        <th>Associated Channels</th>
+                        <th>Associated Analysis Requirements</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if topics %}
+                        {% for topic in topics %}
+                        <tr>
+                            <td><a href="/topic/{{ topic.uuid }}">{{ topic.name }}</a></td>
+                            <td>{{ topic.description }}</td>
+                            <td>
+                                {% for channel in topic.channels %}
+                                    <span class="badge bg-info"><a href="/channel/{{ channel.uuid }}">{{ channel.name }}</a></span>
+                                {% endfor %}
+                            </td>
+                            <td>
+                                {% for requirement in topic.analysis_requirements %}
+                                    <span class="badge bg-success"><a href="/requirement/ {{ requirement.uuid }}">{{ requirement.analysis_worker }}</a></span>
+                                {% endfor %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <td colspan="4" class="text-muted text-center">There are currently no topics.</td>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {% include "components/pagination_controls.html" %}
+
+    </div>
+{% endblock %}
+

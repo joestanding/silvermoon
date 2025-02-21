@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}Data Channels{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Data Channels</h2>
+
+    <table class="table truncate-table table-striped">
+        <thead>
+            <tr>
+                <th class="flex-column">Name</th>
+                <th class="flex-column">Description</th>
+                <th style="width: 170px">Collector</th>
+                <th style="width: 60px">Data</th>
+                <th style="width: 140px">Last Entry</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if channels %}
+                {% for channel in channels %}
+                <tr>
+                    <td><a href="/channel/{{ channel.uuid }}">{{ channel.name }}</a></td>
+                    <td>{{ channel.description }}</td>
+                    <td><a href="/collector/{{ channel.collector.uuid }}">{{ channel.collector.name }}</a></td>
+                    <td>{{ channel.entry_count }}</td>
+                    <td class="text-muted">{{ channel.latest_entry_time.strftime('%Y-%m-%d %H:%M') if channel.latest_entry_time else 'No data' }}</td>
+                </tr>
+                {% endfor %}
+            {% else %}
+                <td colspan="5" class="text-muted text-center">There are currently no data channels.</td>
+            {% endif %}
+        </tbody>
+    </table>
+
+    {% include "components/pagination_controls.html" %}
+    
+</div>
+{% endblock %}
+

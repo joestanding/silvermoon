@@ -1,0 +1,35 @@
+<div class="position-relative d-flex align-items-center">
+    <!-- Pagination Controls (Truly Centered) -->
+    <nav class="position-absolute start-50 translate-middle-x">
+        <ul class="pagination m-0">
+            {% if current_page > 1 %}
+            <li class="page-item">
+                <a class="page-link" href="{{ url_for(request.endpoint, limit=selected_limit, page=current_page-1) }}">Previous</a>
+            </li>
+            {% endif %}
+
+            {% for page in range(1, total_pages + 1) %}
+            <li class="page-item {% if page == current_page %}active{% endif %}">
+                <a class="page-link" href="{{ url_for(request.endpoint, limit=selected_limit, page=page) }}">{{ page }}</a>
+            </li>
+            {% endfor %}
+
+            {% if current_page < total_pages %}
+            <li class="page-item">
+                <a class="page-link" href="{{ url_for(request.endpoint, limit=selected_limit, page=current_page+1) }}">Next</a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+
+    <!-- Rows Per Page Dropdown (Always Right-Aligned) -->
+    <form method="GET" action="{{ request.path }}" class="ms-auto d-flex align-items-center">
+        <select name="limit" id="limit" class="form-select page-count-select w-auto" onchange="this.form.submit()">
+            <option value="10" {% if selected_limit == 10 %}selected{% endif %}>10</option>
+            <option value="20" {% if selected_limit == 20 %}selected{% endif %}>20</option>
+            <option value="30" {% if selected_limit == 30 %}selected{% endif %}>30</option>
+            <option value="50" {% if selected_limit == 50 %}selected{% endif %}>50</option>
+        </select>
+    </form>
+</div>
+

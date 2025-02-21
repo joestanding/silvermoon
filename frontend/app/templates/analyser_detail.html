@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}Analyser Details{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Analyser Details</h2>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5 class="mb-0">Configuration</h5>
+                </div>
+                <div class="card-body">
+                    <pre class="p-3 border rounded" style="font-family: monospace; white-space: pre-wrap;">
+{{ analyser.config | tojson(indent=4) }}
+                    </pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5 class="mb-0">Parameters</h5>
+                </div>
+                <div class="card-body">
+                    <pre class="p-3 border rounded" style="font-family: monospace; white-space: pre-wrap;">
+{{ analyser.task_parameters | tojson(indent=4) }}
+                    </pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}
+

@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+
+{% block title %}Channel: {{ channel.name }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Channel Details</h2>
+
+    <!-- Row 1: Metadata & Associated Topics -->
+    <div class="row mb-3 g-3">
+        <div class="col-md-6">
+            <div class="card mt-3 d-flex flex-column h-100">
+                <div class="card-header">
+                    <h5 class="mb-0">Information</h5>
+                </div>
+                <div class="card-body p-0">
+                    <ul class="list-group">
+                        <table class="table table-striped mb-0">
+                            <tbody>
+                                <tr>
+                                    <td><b>Name</b></td>
+                                    <td>{{ channel.name }}</td>
+                                </tr>
+                                <tr>
+                                    <td><b>Description</b></td>
+                                    <td>{{ channel.description }}</td>
+                                </tr>
+                                <tr>
+                                    <td><b>Collector</b></td>
+                                    <td><a href="/collector/{{ channel.collector.uuid }}">{{ channel.collector.name }}</a></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card mt-3 d-flex flex-column h-100">
+                <div class="card-header">
+                    <h5 class="mb-0">Associated Topics</h5>
+                </div>
+                <div class="card-body p-0"> <!-- Removes extra padding -->
+                    <table class="table table-striped mb-0">
+                        <tbody>
+                            {% for topic in channel.topics %}
+                            <tr>
+                                <td><a href="/topic/{{ topic.uuid }}" class="text-primary">{{ topic.name }}</a></td>
+                                <td>{{ topic.description or 'No description available.' }}</td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="99" class="text-muted text-center">No topics associated with this channel.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Row 2: Bar Chart (Messages Per Day) -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5 class="mb-0">Messages Per Day (Last 30 Days)</h5>
+                </div>
+                <div class="card-body bg-black">
+                    <canvas id="barChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Row 3: Recent Collected Data -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5 class="mb-0">Recent Collected Data</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table truncate-table table-striped">
+                        <thead>
+                            <tr>
+                                <th style="width: 140px">Date/Time</th>
+                                <th class="flex-column">Content</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for entry in collection_entries %}
+                            <tr>
+                                <td class="text-muted">{{ entry.timestamp.strftime('%Y-%m-%d %H:%M') if entry.timestamp else 'N/A' }}</td>
+                                <td>
+                                    <a href="/data/{{ entry.uuid }}">{{ entry.friendly_text[:150] }}</a>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="99" class="text-muted text-center">No recent data collected from this channel.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Row 4: Full-width Metadata -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5 class="mb-0">Metadata</h5>
+                </div>
+                <div class="card-body">
+                    <pre class="p-3 border rounded" style="font-family: monospace; white-space: pre-wrap;">
+{{ channel.metadata | tojson(indent=4) }}
+                    </pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    fetch("/channel/{{ channel.uuid }}/stats")
+        .then(response => response.json())
+        .then(data => {
+            const ctx = document.getElementById("barChart").getContext("2d");
+
+            new Chart(ctx, {
+                type: "bar",
+                data: {
+                    labels: data.labels.map(date => {
+                        const d = new Date(date);
+                        return `${d.getDate()}/${d.getMonth() + 1}`; // Converts "YYYY-MM-DD" to "D/M"
+                    }),
+                    datasets: [{
+                        label: "Messages Per Day",
+                        data: data.values,
+                        backgroundColor: "rgba(54, 162, 235, 0.6)", // Blue
+                        borderColor: "rgba(54, 162, 235, 1)",
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: {
+                                font: {
+                                    size: 10
+                                }
+                            }
+                        },
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        });
+});
+</script>
+
+
+
+
+{% endblock %}
+

@@ -1,0 +1,6 @@
+pymongo
+mongoengine
+flask
+redis
+Flask-Markdown
+flask_wtf

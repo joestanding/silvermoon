@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}Error Details{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Error Details</h2>
+
+    <!-- Row 1: Metadata -->
+    <div class="row mb-3">
+        <div class="col-md-12">
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5 class="mb-0">Information</h5>
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-striped mb-0">
+                        <tbody>
+                            <tr>
+                                <td style="width: 120px"><b>Worker Name</b></td>
+                                <td>{{ error.worker_name }}</td>
+                            </tr>
+                            <tr>
+                                <td><b>Error Type</b></td>
+                                <td>{{ error.error_type }}</td>
+                            </tr>
+                            <tr>
+                                <td><b>Summary</b></td>
+                                <td>{{ error.error_summary }}</td>
+                            </tr>
+                            <tr>
+                                <td><b>Timestamp</b></td>
+                                <td>{{ error.timestamp.strftime('%Y-%m-%d %H:%M:%S') if error.timestamp else 'N/A' }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Row 2: Traceback -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5 class="mb-0">Traceback</h5>
+                </div>
+                <div class="card-body">
+                    <pre class="p-3 border rounded" style="font-family: monospace; white-space: pre-wrap;">
+{{ error.traceback | trim }}
+                    </pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Row 3: Metadata -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5 class="mb-0">Additional Information</h5>
+                </div>
+                <div class="card-body">
+                    <pre class="p-3 border rounded" style="font-family: monospace; white-space: pre-wrap;">
+{{ error.metadata | tojson(indent=4) }}
+                    </pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

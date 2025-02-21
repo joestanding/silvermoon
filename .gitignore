@@ -1,0 +1,44 @@
+# Byte-compiled / compiled Python files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+venv/
+.env/
+.venv/
+
+# Secrets and credentials
+backend/creds/
+backend/creds
+backend/creds*
+*.env
+*.pem
+*.key
+*.crt
+
+# Logs
+logs/
+*.log
+
+# Data files
+backend/data/
+!backend/data/.gitkeep  # Keep directory structure, but ignore contents
+
+# Docker-related
+*.db
+docker-compose.override.yml
+*.pid
+*.sock
+
+# System files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+
+# Sessions and cache
+*.session
+*.session-journal
+backend/data/telegram-session*

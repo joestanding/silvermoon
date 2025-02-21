@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block title %}Data Entry Details{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Data Entry Details</h2>
+
+    <!-- Row 1: Metadata & Collection Source -->
+    <div class="row mb-3 g-3">
+        <div class="col-md-6">
+            <div class="card mt-3 d-flex flex-column h-100">
+                <div class="card-header">
+                    <h5 class="mb-0">Information</h5>
+                </div>
+                <div class="card-body p-0">
+                    <ul class="list-group">
+                        <table class="table table-striped mb-0">
+                            <tbody>
+                                <tr>
+                                    <td><b>Acquired On</b></td>
+                                    <td>{{ data_entry.timestamp.strftime('%Y-%m-%d %H:%M') if data_entry.timestamp else 'N/A' }}</td>
+                                </tr>
+                                <tr>
+                                    <td><b>Collected From</b></td>
+                                    <td><a href="/channel/{{ data_entry.channel.uuid }}">{{ data_entry.channel.name }}</a></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card mt-3 d-flex flex-column h-100">
+                <div class="card-header">
+                    <h5 class="mb-0">Collector</h5>
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-striped mb-0">
+                        <tbody>
+                            <tr>
+                                <td><b>Collector</b></td>
+                                <td><a href="/collector/{{ data_entry.channel.collector.uuid }}">{{ data_entry.channel.collector.name }}</a></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Row 2: Content -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5 class="mb-0">Content</h5>
+                </div>
+                <div class="card-body">
+                    <pre class="p-3 border rounded" style="font-family: monospace; white-space: pre-wrap;">
+{{ data_entry.payload | tojson(indent=4) }}
+                    </pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Back Button -->
+    <div class="mt-3">
+        <a href="{{ url_for('main.data') }}" class="btn btn-secondary">Back to Data List</a>
+    </div>
+</div>
+
+{% endblock %}
+

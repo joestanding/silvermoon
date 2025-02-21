@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}Analysis Tasks{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Analysis Tasks</h2>
+    
+    <div class="d-flex justify-content-end">
+        <a href="/tasks/new" class="btn btn-primary">Add</a>
+    </div>
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th class="flex-column">Name</th>
+                <th class="max-width: 200px">Description</th>
+                <th style="width: 50px"></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if tasks %}
+                {% for task in tasks %}
+                <tr>
+                    <td><a href="/task/{{ task.uuid }}">{{ task.name }}</a></td>
+                    <td>{{ task.description }}</td>
+                    <td>
+                        <a href="/task/{{ task.uuid }}"><i class="fas fa-magnifying-glass"></i></a>
+                        <a href="/task/{{ task.uuid }}/edit"><i class="fas fa-pencil"></i></a>
+                    </td>
+                </tr>
+                {% endfor %}
+            {% else %}
+                <td colspan="4" class="text-muted text-center">There are currently no analysis tasks.</td>
+            {% endif %}
+        </tbody>
+    </table>
+
+    {% include "components/pagination_controls.html" %}
+    
+</div>
+{% endblock %}
+

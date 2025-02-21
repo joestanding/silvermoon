@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}Collector Details: {{ collector.name }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Collector Details</h2>
+    <p class="text-muted" style="margin-top: -4px; margin-bottom: 30px"><b>{{ collector.name }}</b></p>
+
+    <!-- Collector Information -->
+    <div class="col-md-12">
+        <div class="card mt-3 d-flex flex-column h-100">
+            <div class="card-header">
+                <h5 class="mb-0">Information</h5>
+            </div>
+            <div class="card-body p-0">
+                <ul class="list-group">
+                    <table class="table truncate-table table-striped mb-0">
+                        <tbody>
+                            <tr>
+                                <td class="percent-25"><b>Name:</b></td>
+                                <td class="percent-25">{{ collector.name }}</td>
+                                <td class="percent-25"><b>UUID:</b></td>
+                                <td class="percent-25">{{ collector.uuid }}</td>
+                            </tr>
+                            <tr>
+                                <td><b>Description:</b></td>
+                                <td colspan="3">{{ collector.description or 'No description available.' }}</td>
+                            </tr>
+                            <tr>
+                                <td><b>Last Data Entry:</b></td>
+                                <td colspan="3" class="text-muted">
+                                    {{ collector.last_data.strftime('%Y-%m-%d %H:%M') if collector.last_data else 'N/A' }}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Associated Channels -->
+    <div class="card mt-3">
+        <div class="card-header">
+            <h5 class="m-0">Associated Channels</h5>
+        </div>
+        <div class="card-body">
+            <table class="table table-striped mb-0">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Description</th>
+                        <th>Data Entries</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for channel in channels %}
+                    <tr>
+                        <td><a href="/channel/{{ channel.uuid }}">{{ channel.name }}</a></td>
+                        <td>{{ channel.description or 'No description' }}</td>
+                        <td>{{ channel.entry_count }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="4" class="text-muted text-center">No associated channels.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+

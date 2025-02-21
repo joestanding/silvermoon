@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block title %}Silvermoon{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!--
+    <div class="row mb-3">
+        <div class="col-md-3">
+            <div class="p-4 bg-success text-white text-center rounded">4.2m</div>
+        </div>
+        <div class="col-md-3">
+            <div class="p-4 bg-success text-dark rounded">Yellow Box</div>
+        </div>
+        <div class="col-md-3">
+            <div class="p-4 bg-success text-dark rounded">Yellow Box</div>
+        </div>
+        <div class="col-md-3">
+            <div class="p-4 bg-success text-dark rounded">Yellow Box</div>
+        </div>
+    </div>
+    -->
+
+    <!-- Row 1: Most Active Data Channels -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5 class="mb-0">Most Active Data Channels</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Description</th>
+                                <th>Count</th>
+                                <th>Recent Activity</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for channel in most_active_channels %}
+                            <tr>
+                                <td><a href="{{ url_for('main.channel_detail', channel_uuid=channel.uuid) }}">{{ channel.name }}</a></td>
+                                <td>{{ channel.description or 'No description available.' }}</td>
+                                <td>{{ channel.entry_count }}</td>
+                                <td class="text-muted">{{ channel.latest_entry_time.strftime('%Y-%m-%d %H:%M') if channel.latest_entry_time else 'N/A' }}</td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="3" class="text-muted text-center">No active data channels.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Row 2: Most Active Collectors -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5 class="mb-0">Most Active Collectors</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Associated Channels</th>
+                                <td>Count</td>
+                                <th>Last Data Entry</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for collector in most_active_collectors %}
+                            <tr>
+                                <td><a href="{{ url_for('main.collector_detail', collector_uuid=collector.uuid) }}">{{ collector.name }}</a></td>
+                                <td>{{ collector.channel_count }} channels</td>
+                                <td>{{ collector.entry_count }}</td>
+                                <td class="text-muted">{{ collector.last_data.strftime('%Y-%m-%d %H:%M') if collector.last_data else 'N/A' }}</td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="3" class="text-muted text-center">No active collectors.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
