@@ -4,6 +4,7 @@ from openai import OpenAI, OpenAIError
 import logging
 import traceback
 import json
+import time
 
 logging.getLogger().setLevel(logging.INFO)
 
@@ -11,15 +12,14 @@ logging.getLogger().setLevel(logging.INFO)
 
 SYSTEM_PROMPT = """
 In addition to the user's request, you will be provided with a list of functions that you can call if
-their criteria is met. The criteria for each function call is included in its 'description' field.
-You MUST obey the requirements specified in the 'description' field. Do NOT call the functions if
-these requirements are not met. DO call these functions if the requirements ARE met.
+their criteria is met. You must ALWAYS call "set_response" to provide your response to the user. 
+
+YOU MUST ALWAYS CALL debug_reasoning.
 """
 
 # --------------------------------------------------------------------------- #
 
 class GPTAnalyser(AnalyserWorker):
-
 
     def __init__(self):
         super().__init__("GPTAnalyser")
@@ -29,6 +29,27 @@ class GPTAnalyser(AnalyserWorker):
         self.ai = OpenAI(api_key=self.get_config('api_key'))
         self.title = None
         self.tools = [
+            {
+               "type": "function",
+                "function": {
+                    "name": "set_response",
+                    "description": "Provide your response to the user using this function. This should be a response identical to how you'd respond in a context without function calling.",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "response": {
+                                "type": "string",
+                                "description": "Provide your response to the user's prompt in this argument."
+                            }
+                        },
+                        "required": [
+                            "response"
+                        ],
+                        "additionalProperties": False
+                    },
+                    "strict": True
+                }
+            },
             {
                "type": "function",
                 "function": {
@@ -53,18 +74,18 @@ class GPTAnalyser(AnalyserWorker):
             {
                "type": "function",
                 "function": {
-                    "name": "save_result",
-                    "description": "Call to set whether the result should be saved. Invoke this function ONLY if the prompt specifies criteria under which the result should NOT be saved.",
+                    "name": "discard_result",
+                    "description": "Sets whether your response should be discarded. This should ONLY be called IF the user's request has specified criteria under which this should be called. For example, the user may provide you a message to analyse, and ask that you NOT save the result IF the message contains personal information. In that scenario, you would call discard_result ONLY if the message contained personal information, just as the user requested.",
                     "parameters": {
                         "type": "object",
                         "properties": {
-                            "decision": {
-                                "type": "boolean",
-                                "description": "MUST default to 'true' unless the user's prompt explicitly provides criteria under which this result should not be saved. Only call this function if the result MUST NOT be saved."
+                            "reason": {
+                                "type": "string",
+                                "description": "Your reasoning on why you are discarding this result. It better be good."
                             }
                         },
                         "required": [
-                            "decision"
+                            "reason"
                         ],
                         "additionalProperties": False
                     },
@@ -93,6 +114,28 @@ class GPTAnalyser(AnalyserWorker):
                     "strict": True
                 }
             },
+            {
+               "type": "function",
+                "function": {
+                    "name": "debug_reasoning",
+                    "description": "Call this function to provide your reasoning for why you called save_result() the way you did. YOU MUST ALWAYS CALL THIS FUNCTION AND PROVIDE YOUR REASONING.",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "reason": {
+                                "type": "string",
+                                "description": "Explain why you called save_result() in the way you did."
+                            }
+                        },
+                        "required": [
+                            "reason"
+                        ],
+                        "additionalProperties": False
+                    },
+                    "strict": True
+                }
+            },
+
 
 
         ]
@@ -101,7 +144,7 @@ class GPTAnalyser(AnalyserWorker):
 
     def _create_completion(self, messages, tools=None):
         try:
-            logging.info("Sending GPT text request..")
+            logging.info("Sending API request..")
             completion = self.ai.chat.completions.create(
                 messages=messages,
                 model="gpt-4o-mini",
@@ -123,19 +166,19 @@ class GPTAnalyser(AnalyserWorker):
 
     def _handle_function_calls(self, calls):
         if calls:
-            logging.info(f"GPT called {len(calls)} function calls")
             for call in calls:
-                logging.info(f"Function called: {call.function.name}")
                 args = json.loads(call.function.arguments)
+                if call.function.name == 'set_response':
+                    self.response = args['response']
                 if call.function.name == 'set_title':
-                    logging.info(f"GPT set title to: {args['title']}")
                     self.title = args['title']
-                if call.function.name == 'save_result':
-                    logging.info(f"GPT wants to save result: {args['decision']}")
-                    self.save_flag = args['decision']
+                if call.function.name == 'discard_result':
+                    logging.info(f"GPT is discarding because: {args['reason']}")
+                    self.save_flag = False
                 if call.function.name == 'set_importance':
-                    logging.info(f"GPT set importance to: {args['importance']}")
                     self.importance = args['importance']
+                if call.function.name == 'debug_reasoning':
+                    logging.info(f"GPT reasoning is: {args['reason']}")
 
     # ----------------------------------------------------------------------- #
 
@@ -151,18 +194,21 @@ class GPTAnalyser(AnalyserWorker):
     # ----------------------------------------------------------------------- #
 
     def process_task(self, record, task, trigger):
-        logging.info("")
-        logging.info("")
-        logging.info(f"--- Processing Analysis Task ---")
+        start_time = time.time()
+        logging.info("----------------------------------------------------")
+        logging.info("                    TASK START                      ")
+        logging.info("----------------------------------------------------")
         logging.info(f"Data:    {record.uuid}")
         logging.info(f"Task:    {task.name}")
         logging.info(f"Trigger events: {trigger.events}")
-        logging.info(f"Trigger parameters: {trigger.parameters}")
+        #logging.info(f"Trigger parameters: {trigger.parameters}")
+        logging.info("")
 
         # These default options can be changed by GPT through function calls
         self.title = f"GPT Analysis - {task.name}"
         self.importance = 'normal'
         self.save_flag = True
+        self.response = None
 
         if 'parameters' not in trigger or 'prompt' not in trigger['parameters']:
             logging.error("Missing params in trigger OR prompt not in params!")
@@ -179,42 +225,30 @@ class GPTAnalyser(AnalyserWorker):
 
         # Add the prompt to the GPT conversation
         messages = [
+            {"role": "system", "content": SYSTEM_PROMPT},
             {"role": "user", "content": prompt},
         ]
 
         # Prompt 1 - Get textual response
-        completion_text = self._create_completion(messages)
-        if not completion_text:
+        completion = self._create_completion(messages, self.tools)
+        if not completion:
             logging.error("Text API request failed, terminating!")
             return
 
-        # Prompt 2 - Get function calls
-        completion_calls = self._create_completion(messages, self.tools)
-        if not completion_calls:
-            logging.error("Calls API request failed, terminating!")
-            return
-
-        # Extract the response
-        message = completion_text.choices[0].message
-        response = completion_text.choices[0].message.content
-
-        logging.info(f"GPT response: {response}")
-
-        # Process any function calls GPT may have invoked
-        self._handle_function_calls(completion_calls.choices[0].message.tool_calls)
-
+        # Process the function calls to get the response and other attributes
+        self._handle_function_calls(completion.choices[0].message.tool_calls)
 
         payload = {
-            'result': response,
+            'result': self.response,
         }
 
         # Save some metadata to the database about the GPT calls
         metadata = {
-            'completion_tokens': completion_text.usage.completion_tokens,
-            'prompt_tokens': completion_text.usage.prompt_tokens,
-            'total_tokens': completion_text.usage.total_tokens,
-            'model': completion_text.model,
-            'id': completion_text.id
+            'completion_tokens': completion.usage.completion_tokens,
+            'prompt_tokens': completion.usage.prompt_tokens,
+            'total_tokens': completion.usage.total_tokens,
+            'model': completion.model,
+            'id': completion.id
         }
 
         if self.save_flag:
@@ -225,8 +259,13 @@ class GPTAnalyser(AnalyserWorker):
                              task,
                              importance=self.importance,
                              display=display)
-        else:
-            logging.info("GPT requested result NOT be saved!")
+
+        end_time = time.time()
+        logging.info("----------------------------------------------------")
+        logging.info(f"Task took {end_time - start_time:.2f}s")
+        logging.info("----------------------------------------------------")
+        logging.info("")
+        logging.info("")
 
 # --------------------------------------------------------------------------- #
 
